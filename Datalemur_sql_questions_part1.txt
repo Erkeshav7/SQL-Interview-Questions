@@ -1,0 +1,118 @@
+ques-link->https://datalemur.com/questions/matching-skills
+
+ans-> with ans_cte as(
+SELECT candidate_id ,count (skill)
+as num_of_skills from candidates
+where skill in ('Python','Tableau','PostgreSQL') group by candidate_id)
+
+select candidate_id from ans_cte where num_of_skills = 3;
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/sql-histogram-tweets
+
+ans-> WITH tweetcountcte AS (
+SELECT user_id , count(tweet_id) as tweet_per_user
+from tweets where EXTRACT(YEAR FROM tweet_date ) = '2022'
+ group by user_id)
+
+SELECT tweet_per_user as tweet_bucket ,count(user_id) as users_num 
+from tweetcountcte GROUP BY tweet_per_user;
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/sql-page-with-no-likes
+
+ans-> select pages.page_id from pages
+left join page_likes on pages.page_id = page_likes.page_id 
+where user_id isNull order by page_id;
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/supercloud-customer
+
+ans-> WITH supercloud AS (
+SELECT 
+  customers.customer_id, 
+  COUNT(DISTINCT products.product_category) as unique_count
+FROM customer_contracts AS customers
+LEFT JOIN products 
+  ON customers.product_id = products.product_id
+GROUP BY customers.customer_id
+)
+
+SELECT customer_id
+FROM supercloud
+WHERE unique_count = (
+  SELECT COUNT(DISTINCT product_category) 
+  FROM products)
+ORDER BY customer_id;
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/card-launch-success
+
+ans-> WITH card_launch AS (
+  SELECT 
+    card_name,
+    issued_amount,
+    MAKE_DATE(issue_year, issue_month, 1) AS issue_date,
+    MIN(MAKE_DATE(issue_year, issue_month, 1)) OVER (
+      PARTITION BY card_name) AS launch_date
+  FROM monthly_cards_issued
+  )
+  SELECT  
+  card_name, 
+  issued_amount
+FROM card_launch
+WHERE issue_date = launch_date
+ORDER BY issued_amount DESC;
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/laptop-mobile-viewership
+
+ans->SELECT 
+sum( case when device_type='laptop' then 1 end) as laptop_views,
+sum(case when device_type in ('tablet','phone') then 1 end) as mobile_views
+FROM viewership;
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/sql-average-post-hiatus-1
+
+ans->SELECT 
+	user_id, 
+    MAX(post_date::date)- MIN(post_date::date) AS days_between
+FROM
+	posts
+	where date_part('year', post_date) = 2021
+
+GROUP BY 
+	user_id
+having
+	COUNT(post_id)>1
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/second-day-confirmation
+
+ans->
+SELECT  user_id
+FROM emails 
+JOIN texts
+  ON emails.email_id = texts.email_id
+WHERE texts.action_date = emails.signup_date + INTERVAL '1 day'
+  AND texts.signup_action = 'Confirmed';
+
+============================================================================================================================================================
+
+ques-link->https://datalemur.com/questions/top-profitable-drugs
+
+ans->SELECT drug,total_sales-cogs as total_profit 
+FROM pharmacy_sales order by total_profit desc limit 3
+
+
+---------------------------------------------------------------------------*--------------------------------------------------------------------------------
+
+
